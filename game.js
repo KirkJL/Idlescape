@@ -19,6 +19,7 @@ const WORLD = [
 
 let xpDrops = [];
 let shakeTiles = [];
+let isWalkingPath = false;
 
 const sounds = {
 wood: new Audio("https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"),
@@ -28,6 +29,7 @@ fish: new Audio("https://assets.mixkit.co/active_storage/sfx/2041/2041-preview.m
 
 Object.values(sounds).forEach(s => {
 s.volume = 0.4;
+s.preload = "auto";
 });
 
 const state = {
@@ -52,7 +54,10 @@ if (el) el.innerText = val;
 function playSound(sound) {
 try {
 sound.currentTime = 0;
-sound.play();
+const p = sound.play();
+if (p && typeof p.catch === "function") {
+p.catch(() => {});
+}
 } catch {}
 }
 
@@ -63,9 +68,9 @@ return WORLD[y][x];
 }
 
 function updateStats(data) {
+if (!data || !data.skills || !data.inventory || !data.xp) return;
 
 setText("playerName", data.username);
-
 setText("wood", data.skills.woodcutting);
 setText("fish", data.skills.fishing);
 setText("mine", data.skills.mining);
@@ -77,16 +82,13 @@ setText("ore", data.inventory.ore);
 setText("woodXp", data.xp.woodcutting);
 setText("fishXp", data.xp.fishing);
 setText("mineXp", data.xp.mining);
-
 }
 
 function drawTile(x, y, tile) {
-
 let px = x * TILE_SIZE;
 let py = y * TILE_SIZE;
 
 const shake = shakeTiles.find(t => t.x === x && t.y === y);
-
 if (shake) {
 px += Math.random() * 4 - 2;
 py += Math.random() * 4 - 2;
@@ -98,7 +100,6 @@ state.ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
 }
 
 if (tile === "T") {
-
 state.ctx.fillStyle = "#2ea043";
 state.ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
 
@@ -109,11 +110,9 @@ state.ctx.fillStyle = "#1f6f3d";
 state.ctx.beginPath();
 state.ctx.arc(px + 16, py + 10, 10, 0, Math.PI * 2);
 state.ctx.fill();
-
 }
 
 if (tile === "R") {
-
 state.ctx.fillStyle = "#2ea043";
 state.ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
 
@@ -121,20 +120,15 @@ state.ctx.fillStyle = "#888";
 state.ctx.beginPath();
 state.ctx.arc(px + 16, py + 16, 10, 0, Math.PI * 2);
 state.ctx.fill();
-
 }
 
 if (tile === "W") {
-
 state.ctx.fillStyle = "#1f6feb";
 state.ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
-
 }
-
 }
 
 function drawPlayer() {
-
 if (!state.player) return;
 
 state.renderX += (state.player.position.x - state.renderX) * 0.2;
@@ -160,13 +154,10 @@ state.ctx.fillStyle = "#111";
 state.ctx.fillRect(px + 11, py + 12, 3, 3);
 state.ctx.fillRect(px + 18, py + 12, 3, 3);
 state.ctx.fillRect(px + 11, py + 19, 10, 2);
-
 }
 
 function renderXpDrops() {
-
 for (let i = xpDrops.length - 1; i >= 0; i--) {
-
 const drop = xpDrops[i];
 
 drop.y -= 0.02;
@@ -174,7 +165,6 @@ drop.life--;
 
 state.ctx.fillStyle = "#ffff66";
 state.ctx.font = "bold 14px Arial";
-
 state.ctx.fillText(
 drop.text,
 drop.x * TILE_SIZE + 2,
@@ -184,12 +174,11 @@ drop.y * TILE_SIZE
 if (drop.life <= 0) {
 xpDrops.splice(i, 1);
 }
-
 }
-
 }
 
 function render() {
+if (!state.canvas || !state.ctx) return;
 
 state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
 
@@ -201,70 +190,61 @@ drawTile(x, y, WORLD[y][x]);
 
 drawPlayer();
 renderXpDrops();
-
 }
 
 async function loadPlayer() {
-
 const r = await call("/player", {});
+if (r.error) return;
 
 state.player = r;
-
 state.renderX = r.position.x;
 state.renderY = r.position.y;
 
 updateStats(r);
-
 }
 
 async function startGame() {
+const auth = byId("auth");
+const game = byId("game");
 
-byId("auth").style.display = "none";
-byId("game").style.display = "block";
+if (auth) auth.style.display = "none";
+if (game) game.style.display = "block";
 
 state.canvas = byId("gameCanvas");
-state.ctx = state.canvas.getContext("2d");
+if (!state.canvas) return;
 
+state.ctx = state.canvas.getContext("2d");
 state.canvas.onclick = handleCanvasClick;
 
 window.addEventListener("keydown", handleKeyMovement);
 
 await loadPlayer();
-
 }
 
 async function moveTo(x, y) {
-
 const r = await call("/move", { x, y });
 
-if (!r.error) {
+if (r.error) return false;
 
 state.player = r;
-
 state.anim = "walk";
 state.animTimer = 15;
-
 updateStats(r);
 
-}
-
+return true;
 }
 
 async function interact(skill, x, y) {
-
 const r = await call("/action", { skill, x, y });
 
-if (!r.error) {
+if (r.error) return;
 
 state.player = r;
-
 state.anim = "skill";
 state.animTimer = 30;
-
 updateStats(r);
 
 let text = "+10 XP";
-
 if (skill === "woodcutting") text = "+10 WC XP";
 if (skill === "mining") text = "+10 Mining XP";
 if (skill === "fishing") text = "+10 Fishing XP";
@@ -277,18 +257,16 @@ life: 60
 });
 
 shakeTiles.push({ x, y, life: 20 });
-
-}
-
 }
 
 async function walkPath(targetX, targetY) {
+if (!state.player || isWalkingPath) return;
+isWalkingPath = true;
 
 let px = state.player.position.x;
 let py = state.player.position.y;
 
 while (px !== targetX || py !== targetY) {
-
 let dx = targetX - px;
 let dy = targetY - py;
 
@@ -301,21 +279,22 @@ stepX += Math.sign(dx);
 stepY += Math.sign(dy);
 }
 
-await moveTo(stepX, stepY);
+const ok = await moveTo(stepX, stepY);
+if (!ok) break;
 
 px = stepX;
 py = stepY;
 
 await new Promise(r => setTimeout(r, 120));
-
 }
 
+isWalkingPath = false;
 }
 
 async function handleCanvasClick(event) {
+if (!state.canvas || !state.player) return;
 
 const rect = state.canvas.getBoundingClientRect();
-
 const scaleX = state.canvas.width / rect.width;
 const scaleY = state.canvas.height / rect.height;
 
@@ -326,60 +305,55 @@ const tileX = Math.floor(clickX / TILE_SIZE);
 const tileY = Math.floor(clickY / TILE_SIZE);
 
 const tile = getTile(tileX, tileY);
-
 if (!tile) return;
 
 if (tile === "G") {
 await walkPath(tileX, tileY);
+return;
 }
 
 if (tile === "T") {
 playSound(sounds.wood);
 await interact("woodcutting", tileX, tileY);
+return;
 }
 
 if (tile === "R") {
 playSound(sounds.mine);
 await interact("mining", tileX, tileY);
+return;
 }
 
 if (tile === "W") {
 playSound(sounds.fish);
 await interact("fishing", tileX, tileY);
 }
-
 }
 
 function handleKeyMovement(e) {
-
-if (!state.player) return;
+if (!state.player || isWalkingPath) return;
 
 let x = state.player.position.x;
 let y = state.player.position.y;
 
 if (e.key === "ArrowUp") y--;
-if (e.key === "ArrowDown") y++;
-if (e.key === "ArrowLeft") x--;
-if (e.key === "ArrowRight") x++;
+else if (e.key === "ArrowDown") y++;
+else if (e.key === "ArrowLeft") x--;
+else if (e.key === "ArrowRight") x++;
+else return;
 
 const tile = getTile(x, y);
-
 if (tile === "G") {
 moveTo(x, y);
 }
-
 }
 
 function updateEffects() {
-
 for (let i = shakeTiles.length - 1; i >= 0; i--) {
-
 shakeTiles[i].life--;
-
 if (shakeTiles[i].life <= 0) {
 shakeTiles.splice(i, 1);
 }
-
 }
 
 if (state.animTimer > 0) {
@@ -387,20 +361,15 @@ state.animTimer--;
 } else {
 state.anim = "idle";
 }
-
 }
 
 function gameLoop() {
-
 updateEffects();
 render();
-
 requestAnimationFrame(gameLoop);
-
 }
 
 window.onload = function () {
-
 const token = localStorage.getItem("token");
 
 if (token) {
@@ -408,5 +377,4 @@ startGame();
 }
 
 gameLoop();
-
 };
