@@ -5,19 +5,27 @@ document.getElementById("game").style.display="block";
 
 const r = await call("/player",{});
 
-document.getElementById("player").innerText=r.username;
+document.getElementById("player").innerText = r.username;
 
 updateStats(r);
 
 }
 
+
+
 function updateStats(data){
 
-document.getElementById("wood").innerText=data.skills.woodcutting;
-document.getElementById("fish").innerText=data.skills.fishing;
-document.getElementById("mine").innerText=data.skills.mining;
+document.getElementById("wood").innerText = data.skills.woodcutting;
+document.getElementById("fish").innerText = data.skills.fishing;
+document.getElementById("mine").innerText = data.skills.mining;
+
+document.getElementById("logs").innerText = data.inventory.logs;
+document.getElementById("fishInv").innerText = data.inventory.fish;
+document.getElementById("ore").innerText = data.inventory.ore;
 
 }
+
+
 
 async function action(skill){
 
@@ -27,10 +35,16 @@ updateStats(r);
 
 }
 
-window.onload = ()=>{
 
-if(localStorage.getItem("token")){
+
+window.onload = function(){
+
+const token = localStorage.getItem("token");
+
+if(token){
+
 startGame();
+
 }
 
 }
