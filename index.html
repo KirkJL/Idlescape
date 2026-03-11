@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
 <title>IdleScape</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
-<div id="auth">
-
 <h1>IdleScape</h1>
 
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
+<div id="auth">
 
-<button onclick="signup()">Sign Up</button>
-<button onclick="login()">Login</button>
+<input id="username" placeholder="Username">
+<br>
+<input id="password" type="password" placeholder="Password">
+<br>
+
+<button type="button" onclick="signup()">Sign Up</button>
+<button type="button" onclick="login()">Login</button>
 
 </div>
+
 
 <div id="game" style="display:none">
 
@@ -26,7 +32,7 @@
 
 <div class="panel">
 
-<h3>Skills</h3>
+<h3>Actions</h3>
 
 <button onclick="action('woodcutting')">Chop Tree</button>
 <button onclick="action('fishing')">Fish</button>
@@ -34,15 +40,28 @@
 
 </div>
 
+
 <div class="panel">
 
-<h3>Stats</h3>
+<h3>Skills</h3>
 
 <p>Woodcutting: <span id="wood"></span></p>
 <p>Fishing: <span id="fish"></span></p>
 <p>Mining: <span id="mine"></span></p>
 
 </div>
+
+<div class="panel">
+
+<h3>Inventory</h3>
+
+<p>Logs: <span id="logs"></span></p>
+<p>Fish: <span id="fishInv"></span></p>
+<p>Ore: <span id="ore"></span></p>
+
+</div>
+
+<br>
 
 <button onclick="logout()">Logout</button>
 
