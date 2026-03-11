@@ -332,14 +332,14 @@ if(!state.canvas || !state.player) return;
 
 const rect = state.canvas.getBoundingClientRect();
 
-const scaleX = state.canvas.width/rect.width;
-const scaleY = state.canvas.height/rect.height;
+const scaleX = state.canvas.width / rect.width;
+const scaleY = state.canvas.height / rect.height;
 
-const clickX = (event.clientX-rect.left)*scaleX;
-const clickY = (event.clientY-rect.top)*scaleY;
+const clickX = (event.clientX - rect.left) * scaleX;
+const clickY = (event.clientY - rect.top) * scaleY;
 
-const tileX = Math.floor(clickX/TILE_SIZE);
-const tileY = Math.floor(clickY/TILE_SIZE);
+const tileX = Math.floor(clickX / TILE_SIZE);
+const tileY = Math.floor(clickY / TILE_SIZE);
 
 const tile = getTile(tileX,tileY);
 
