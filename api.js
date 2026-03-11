@@ -1,4 +1,4 @@
-const API = "autumn-king-2661.kirkjlemon.workers.dev";
+const API = "https://autumn-king-2661.kirkjlemon.workers.dev";
 
 async function call(endpoint,data){
 
