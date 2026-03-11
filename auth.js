@@ -6,11 +6,20 @@ const password = document.getElementById("password").value;
 const r = await call("/signup",{username,password});
 
 if(r.token){
+
 localStorage.setItem("token",r.token);
+
 startGame();
+
+}else{
+
+alert(JSON.stringify(r));
+
 }
 
 }
+
+
 
 async function login(){
 
@@ -20,15 +29,25 @@ const password = document.getElementById("password").value;
 const r = await call("/login",{username,password});
 
 if(r.token){
+
 localStorage.setItem("token",r.token);
+
 startGame();
+
+}else{
+
+alert(JSON.stringify(r));
+
 }
 
 }
+
+
 
 function logout(){
 
 localStorage.removeItem("token");
+
 location.reload();
 
 }
