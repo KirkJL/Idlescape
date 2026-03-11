@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>IdleScape</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="auth">
+
+<h1>IdleScape</h1>
+
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
+
+</div>
+
+<div id="game" style="display:none">
+
+<h2 id="player"></h2>
+
+<div class="panel">
+
+<h3>Skills</h3>
+
+<button onclick="action('woodcutting')">Chop Tree</button>
+<button onclick="action('fishing')">Fish</button>
+<button onclick="action('mining')">Mine</button>
+
+</div>
+
+<div class="panel">
+
+<h3>Stats</h3>
+
+<p>Woodcutting: <span id="wood"></span></p>
+<p>Fishing: <span id="fish"></span></p>
+<p>Mining: <span id="mine"></span></p>
+
+</div>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<script src="api.js"></script>
+<script src="auth.js"></script>
+<script src="game.js"></script>
+
+</body>
+</html>
